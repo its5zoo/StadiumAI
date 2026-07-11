@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { ROLES } from '../constants/roles.js';
-import { authenticate, authorizeRole } from '../middleware/auth.middleware.js';
-
+import { authenticate } from '../middleware/auth.middleware.js';
+import { authorizeRole } from '../middleware/role.middleware.js';
 const router = Router();
 
 // Apply auth middleware to all organizer routes
