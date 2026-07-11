@@ -7,9 +7,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        dark: "#0f172a",
-        primary: "#2563eb",
-        accent: "#22c55e",
+        dark: "#0f172a", // Navy background
+        primary: "#1e3a8a", // FIFA Deep Blue
+        accent: "#16a34a", // FIFA Green
+        fifagold: "#facc15"
       }
     },
   },

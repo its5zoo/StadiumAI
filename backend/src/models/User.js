@@ -10,7 +10,9 @@ const userSchema = new mongoose.Schema({
     default: 'FAN'
   },
   preferredLanguage: { type: String, default: 'en' },
-  stadiumId: { type: String, required: true, default: 'stadium_001' }
+  favoriteTeam: { type: String },
+  accessibilityMode: { type: Boolean, default: false },
+  stadiumId: { type: String, default: 'stadium_001' }
 }, { timestamps: true });
 
 // Transform output to match mock id format

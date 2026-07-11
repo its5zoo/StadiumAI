@@ -88,3 +88,40 @@ export const recommendations = async (req, res, next) => {
     res.status(200).json({ success: true, data: { recommendations: ["Mock: Monitor North Gate", "Mock: Check Food Court supplies"] }, source: "fallback" });
   }
 };
+
+export const voiceQuery = async (req, res, next) => {
+  const start = Date.now();
+  const { text, userLanguage, stadiumId } = req.body;
+
+  if (isPromptInjection(text)) {
+    return res.status(400).json({ success: false, message: "Query rejected due to security policy." });
+  }
+
+  try {
+    let englishQuery = text;
+    // 1. Translate to English if user language is not English
+    if (userLanguage && userLanguage.toLowerCase() !== 'en' && userLanguage.toLowerCase() !== 'english') {
+      englishQuery = await translateTextAI(text, 'English');
+    }
+
+    // 2. Fetch context
+    const stadium = await stadiumService.getStadiumData();
+    const ragContext = await contextService.buildContext(englishQuery);
+
+    // 3. Process AI
+    const aiResEnglish = await processNavigationQuery(englishQuery, stadium, ragContext);
+
+    // 4. Translate back if needed
+    let finalResponse = aiResEnglish;
+    if (userLanguage && userLanguage.toLowerCase() !== 'en' && userLanguage.toLowerCase() !== 'english') {
+      finalResponse = await translateTextAI(aiResEnglish, userLanguage);
+    }
+
+    await logAIQuery(req.user?.id, `Voice (${userLanguage}): ${text}`, finalResponse, Date.now() - start);
+
+    res.status(200).json({ success: true, data: { originalQuery: text, englishQuery, response: finalResponse }, source: "ai" });
+  } catch (error) {
+    console.warn("AI Voice Pipeline Failed. Using fallback.", error);
+    res.status(200).json({ success: true, data: { response: "I'm having trouble processing your voice query right now." }, source: "fallback" });
+  }
+};

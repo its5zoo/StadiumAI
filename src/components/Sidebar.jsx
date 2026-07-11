@@ -1,15 +1,22 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Compass, Users, Globe, Settings, X } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext';
+import { Map, Settings, X, LayoutDashboard, BotMessageSquare } from 'lucide-react';
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
-  const links = [
-    { to: "/fan", icon: <Home size={20} />, label: "Fan Dashboard" },
-    { to: "/navigation", icon: <Compass size={20} />, label: "Navigation" },
-    { to: "/crowd", icon: <Users size={20} />, label: "Crowd Intel" },
-    { to: "/translate", icon: <Globe size={20} />, label: "Translator" },
-    { to: "/organizer", icon: <Settings size={20} />, label: "Organizer" },
+  const { user } = useContext(AuthContext);
+  
+  const fanLinks = [
+    { to: "/fan/dashboard", icon: <LayoutDashboard size={20} />, label: "Fan Dashboard" },
+    { to: "/fan/map", icon: <Map size={20} />, label: "Smart Map" },
+    { to: "/fan/assistant", icon: <BotMessageSquare size={20} />, label: "Unified AI" },
   ];
+
+  const organizerLinks = [
+    { to: "/organizer", icon: <Settings size={20} />, label: "Control Center" },
+  ];
+
+  const links = user?.role === 'ORGANIZER' ? organizerLinks : fanLinks;
 
   return (
     <>

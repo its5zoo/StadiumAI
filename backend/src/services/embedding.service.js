@@ -3,7 +3,7 @@ import { getGeminiModel } from '../config/gemini.js';
 class EmbeddingService {
   async generateEmbedding(text) {
     try {
-      const model = getGeminiModel('text-embedding-004');
+      const model = getGeminiModel('gemini-embedding-2');
       const result = await model.embedContent(text);
       return result.embedding.values;
     } catch (error) {

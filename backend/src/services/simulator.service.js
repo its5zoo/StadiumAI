@@ -1,15 +1,17 @@
 import { getIO } from '../socket/socket.server.js';
 import { predictCrowdCongestion } from '../ai/crowd.ai.js';
-import contextService from '../context.service.js';
+import contextService from './context.service.js';
 
 let simulatorInterval = null;
 
-// Mock active dynamic crowd density states
+// Mock active dynamic crowd density states for MetLife Stadium Demo
 const currentCrowd = [
-  { zone: "Gate A", density: 40, status: "LOW" },
-  { zone: "Gate B", density: 30, status: "LOW" },
-  { zone: "Gate 6", density: 60, status: "MEDIUM" },
-  { zone: "Main Concourse", density: 50, status: "MEDIUM" }
+  { zone: "Gate 1 (North)", density: 45, status: "LOW" },
+  { zone: "Gate 2 (East)", density: 30, status: "LOW" },
+  { zone: "Gate 4 (South)", density: 60, status: "MEDIUM" },
+  { zone: "Gate 5 (West)", density: 85, status: "HIGH" }, // Simulated congestion
+  { zone: "Food Court A", density: 70, status: "MEDIUM" },
+  { zone: "Medical Tent 1", density: 25, status: "LOW" }
 ];
 
 export const startCrowdSimulator = () => {
@@ -62,5 +64,5 @@ export const startCrowdSimulator = () => {
     } catch (err) {
       console.warn("Simulator tick error:", err.message);
     }
-  }, 10000); // Tick every 10 seconds for real-time feel without spamming
+  }, 45000); // Tick every 45 seconds to avoid API rate limits
 };
