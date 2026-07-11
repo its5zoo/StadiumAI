@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import Card from '../components/Card';
 import AlertCard from '../components/AlertCard';
 import StatusBadge from '../components/StatusBadge';
-import { alerts } from '../mock/alerts';
+import { AppContext } from '../context/AppContext';
+import { getDensityStatus } from '../mock/crowdSimulation';
 
 export default function FanDashboard() {
+  const { alerts, crowdData } = useContext(AppContext);
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Fan Dashboard</h1>
@@ -13,7 +16,7 @@ export default function FanDashboard() {
       {alerts.length > 0 && (
         <div className="space-y-2">
           {alerts.map((alert, i) => (
-            <AlertCard key={i} title={alert.title} type="warning" />
+            <AlertCard key={i} title={alert.title} message={alert.message} type="warning" />
           ))}
         </div>
       )}
@@ -30,18 +33,12 @@ export default function FanDashboard() {
 
         <Card title="Crowd Status">
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span>Main Concourse</span>
-              <StatusBadge status="High" />
-            </div>
-            <div className="flex justify-between items-center">
-              <span>Food Court A</span>
-              <StatusBadge status="Medium" />
-            </div>
-            <div className="flex justify-between items-center">
-              <span>Gate B</span>
-              <StatusBadge status="Low" />
-            </div>
+            {crowdData.slice(0, 3).map((item, index) => (
+              <div key={index} className="flex justify-between items-center">
+                <span>{item.zone}</span>
+                <StatusBadge status={getDensityStatus(item.density)} text={`${item.density}%`} />
+              </div>
+            ))}
           </div>
         </Card>
 
