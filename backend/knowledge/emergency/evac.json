@@ -1,0 +1,8 @@
+{
+  "evacuationRoutes": [
+    {"zone": "North", "route": "Exit via Gate A immediately"},
+    {"zone": "South", "route": "Exit via Gate 6 immediately"}
+  ],
+  "fireExits": 12,
+  "assemblyPoints": ["Parking Lot A", "Parking Lot B"]
+}

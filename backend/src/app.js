@@ -16,6 +16,7 @@ import authRoutes from './routes/auth.routes.js';
 import fanRoutes from './routes/fan.routes.js';
 import organizerRoutes from './routes/organizer.routes.js';
 import aiRoutes from './routes/ai.routes.js';
+import knowledgeRoutes from './routes/knowledge.routes.js';
 
 const app = express();
 
@@ -36,6 +37,7 @@ const API_PREFIX = '/api/v1';
 app.use(`${API_PREFIX}/health`, healthRoutes);
 app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/ai`, aiRoutes);
+app.use(`${API_PREFIX}/knowledge`, knowledgeRoutes);
 
 // Protected Routes with Audit Logging
 app.use(`${API_PREFIX}/fan`, authenticate, authorizeRole(ROLES.FAN, ROLES.ORGANIZER), logActivity('VIEW_FAN_DASHBOARD'), fanRoutes);

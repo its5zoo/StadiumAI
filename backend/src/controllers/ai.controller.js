@@ -7,6 +7,7 @@ import { logAIQuery } from '../ai/aiLogger.js';
 
 import stadiumService from '../services/stadium.service.js';
 import crowdService from '../services/crowd.service.js';
+import contextService from '../services/context.service.js';
 import { navigationResponses } from '../mock/navigationResponses.js';
 
 export const navigation = async (req, res, next) => {
@@ -19,12 +20,14 @@ export const navigation = async (req, res, next) => {
 
   try {
     const stadium = await stadiumService.getStadiumData();
-    const aiRes = await processNavigationQuery(query, stadium);
+    const ragContext = await contextService.buildContext(query);
+    
+    const aiRes = await processNavigationQuery(query, stadium, ragContext);
     await logAIQuery(req.user?.id, query, aiRes, Date.now() - start);
     
     res.status(200).json({ success: true, data: { query, response: aiRes }, source: "ai" });
   } catch (error) {
-    console.warn("AI Navigation Failed. Using fallback.");
+    console.warn("AI Navigation Failed. Using fallback.", error);
     // Fallback
     const lowerQuery = query.toLowerCase();
     let fallbackRes = "Mock backend response: Please proceed to the nearest information desk.";
@@ -58,12 +61,14 @@ export const crowdAnalysis = async (req, res, next) => {
   const start = Date.now();
   try {
     const crowd = await crowdService.getLiveCrowdData();
-    const aiRes = await predictCrowdCongestion(crowd);
+    const ragContext = await contextService.buildContext("crowd evacuation safety routes and gates");
+    
+    const aiRes = await predictCrowdCongestion(crowd, ragContext);
     await logAIQuery(req.user?.id, "Crowd Analysis Request", aiRes, Date.now() - start);
     
     res.status(200).json({ success: true, data: { analysis: aiRes }, source: "ai" });
   } catch (error) {
-    console.warn("AI Crowd Analysis Failed. Using fallback.");
+    console.warn("AI Crowd Analysis Failed. Using fallback.", error);
     res.status(200).json({ success: true, data: { analysis: "Mock analysis: All zones are operating normally." }, source: "fallback" });
   }
 };
