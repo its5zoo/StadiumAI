@@ -1,8 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AppProvider } from './context/AppContext';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 import DashboardLayout from './layouts/DashboardLayout';
 import Home from './pages/Home';
@@ -17,11 +19,13 @@ import OrganizerDashboard from './pages/OrganizerDashboard';
 
 function App() {
   return (
-    <AuthProvider>
-      <AppProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<Home />} />
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppProvider>
+          <Router>
+            <Toaster position="top-right" toastOptions={{ style: { background: '#1e293b', color: '#fff' } }} />
+            <Routes>
+              <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
@@ -47,6 +51,7 @@ function App() {
         </Router>
       </AppProvider>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

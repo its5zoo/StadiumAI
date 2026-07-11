@@ -1,92 +1,108 @@
 import React, { useState } from 'react';
-import { ArrowRightLeft } from 'lucide-react';
-import { translations } from '../mock/translations';
+import { Languages, Loader2 } from 'lucide-react';
+import Card from '../components/Card';
+import toast from 'react-hot-toast';
 
 export default function TranslationPage() {
-  const [inputText, setInputText] = useState("");
-  const [outputText, setOutputText] = useState("");
-  const [sourceLang, setSourceLang] = useState("Spanish");
-  const [targetLang, setTargetLang] = useState("English");
+  const [sourceText, setSourceText] = useState("");
+  const [targetLang, setTargetLang] = useState("Spanish");
+  const [translation, setTranslation] = useState("");
+  const [isTranslating, setIsTranslating] = useState(false);
 
-  const handleTranslate = () => {
-    const lowerInput = inputText.trim().toLowerCase();
+  const handleTranslate = async () => {
+    if (!sourceText.trim()) {
+      toast.error("Please enter text to translate.");
+      return;
+    }
     
-    // Exact match for the mock dictionary
-    if (translations[lowerInput]) {
-      setOutputText(translations[lowerInput]);
-    } else {
-      // Mock failure or generic response
-      setOutputText("Translation unavailable in mock data. Try: 'hola', 'gracias', or '¿dónde está la puerta a?'");
+    setIsTranslating(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/v1/ai/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: sourceText, targetLang })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Translation failed');
+      }
+
+      setTranslation(data.data.translation);
+      if (data.source === "fallback") {
+        toast("Using offline dictionary", { icon: 'ℹ️' });
+      }
+    } catch (error) {
+      toast.error(error.message || "AI unavailable. Check connection.");
+      // Fallback local mock
+      setTimeout(() => {
+        setTranslation(`[Offline Mock]: Translated to ${targetLang}`);
+      }, 500);
+    } finally {
+      setIsTranslating(false);
     }
   };
 
-  const handleSwap = () => {
-    setSourceLang(targetLang);
-    setTargetLang(sourceLang);
-    setInputText(outputText);
-    setOutputText("");
-  };
-
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-center mb-8">Multilingual Assistant</h1>
+    <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="flex flex-col items-center gap-3 mb-8">
+        <Languages size={48} className="text-primary mb-2" />
+        <h1 className="text-3xl font-bold text-white text-center">Multilingual Assistant</h1>
+      </div>
 
-      <div className="bg-[#1e293b] rounded-xl border border-gray-700 p-4 md:p-6 shadow-lg">
-        {/* Language Selectors */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-          <select 
-            value={sourceLang}
-            onChange={(e) => setSourceLang(e.target.value)}
-            className="w-full md:w-[45%] bg-[#0f172a] border border-gray-700 rounded-lg p-3 text-white outline-none focus:border-primary"
-          >
-            <option>English</option>
-            <option>Spanish</option>
-            <option>French</option>
-            <option>Arabic</option>
-          </select>
-          
-          <button onClick={handleSwap} className="p-3 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors text-gray-400">
-            <ArrowRightLeft size={20} />
-          </button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card title="Source (Auto-Detect)">
+          <textarea 
+            className="w-full h-48 bg-[#0f172a] border border-gray-700 rounded-lg p-4 text-white focus:outline-none focus:border-primary resize-none"
+            placeholder="Type your question or statement here..."
+            value={sourceText}
+            onChange={(e) => setSourceText(e.target.value)}
+          ></textarea>
+        </Card>
 
-          <select 
-            value={targetLang}
-            onChange={(e) => setTargetLang(e.target.value)}
-            className="w-full md:w-[45%] bg-[#0f172a] border border-gray-700 rounded-lg p-3 text-white outline-none focus:border-primary"
-          >
-            <option>Spanish</option>
-            <option>English</option>
-            <option>French</option>
-            <option>Arabic</option>
-          </select>
-        </div>
-
-        {/* Text Areas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col">
-            <textarea 
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              className="w-full h-48 bg-[#0f172a] border border-gray-700 rounded-lg p-4 text-white resize-none outline-none focus:border-primary"
-              placeholder="Enter text to translate..."
-            ></textarea>
+        <Card title="Translation">
+          <div className="mb-4">
+            <select 
+              className="bg-[#0f172a] border border-gray-700 text-white rounded-lg px-4 py-2 w-full focus:outline-none focus:border-primary"
+              value={targetLang}
+              onChange={(e) => setTargetLang(e.target.value)}
+            >
+              <option value="Spanish">Spanish</option>
+              <option value="French">French</option>
+              <option value="Arabic">Arabic</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Japanese">Japanese</option>
+            </select>
           </div>
-          <div className="flex flex-col">
-            <div className={`w-full h-48 bg-[#0f172a] border border-gray-700 rounded-lg p-4 ${outputText ? 'text-white' : 'text-gray-400'}`}>
-              {outputText || "Translation will appear here..."}
-            </div>
+          <div className="w-full h-[132px] bg-[#0f172a] border border-gray-700 rounded-lg p-4 text-gray-300 relative flex items-center justify-center">
+            {isTranslating ? (
+              <div className="flex flex-col items-center text-primary">
+                <Loader2 className="animate-spin mb-2" size={24} />
+                <span className="text-sm">Thinking...</span>
+              </div>
+            ) : translation ? (
+              <div className="w-full h-full text-left">{translation}</div>
+            ) : (
+              <span className="text-gray-600 italic">Translation will appear here...</span>
+            )}
           </div>
-        </div>
+        </Card>
+      </div>
 
-        {/* Action Button */}
-        <div className="mt-6 flex justify-end">
-          <button 
-            onClick={handleTranslate}
-            className="bg-primary hover:bg-blue-700 text-white font-semibold py-2 px-8 rounded-lg transition-colors"
-          >
-            Translate
-          </button>
-        </div>
+      <div className="flex justify-end mt-6">
+        <button 
+          onClick={handleTranslate}
+          className="bg-primary hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 flex items-center gap-2"
+          disabled={isTranslating}
+        >
+          {isTranslating ? 'Translating...' : 'Translate'}
+        </button>
       </div>
     </div>
   );
