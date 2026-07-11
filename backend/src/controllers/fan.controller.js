@@ -1,11 +1,11 @@
 import crowdService from '../services/crowd.service.js';
 import stadiumService from '../services/stadium.service.js';
 
-export const getFanDashboard = (req, res, next) => {
+export const getFanDashboard = async (req, res, next) => {
   try {
-    const crowd = crowdService.getLiveCrowdData();
-    const alerts = crowdService.getAlerts();
-    const zones = stadiumService.getZones();
+    const crowd = await crowdService.getLiveCrowdData();
+    const alerts = await crowdService.getAlerts();
+    const zones = await stadiumService.getZones();
 
     res.status(200).json({
       success: true,

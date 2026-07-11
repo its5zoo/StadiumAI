@@ -2,18 +2,18 @@ import stadiumService from './stadium.service.js';
 import { STATUS } from '../constants/status.js';
 
 class CrowdService {
-  getLiveCrowdData() {
-    // In future this will fetch from real-time DB / Redis
-    return stadiumService.getZones().map(zone => ({
+  async getLiveCrowdData() {
+    const zones = await stadiumService.getZones();
+    return zones.map(zone => ({
       zone: zone.name,
       type: zone.type,
-      density: Math.round((zone.occupancy / zone.capacity) * 100),
-      status: zone.status
+      density: Math.round((zone.occupancy / zone.capacity) * 100) || 0,
+      status: zone.status || STATUS.LOW
     }));
   }
 
-  getAlerts() {
-    const crowd = this.getLiveCrowdData();
+  async getAlerts() {
+    const crowd = await this.getLiveCrowdData();
     return crowd
       .filter(c => c.status === STATUS.HIGH || c.density > 70)
       .map(c => ({

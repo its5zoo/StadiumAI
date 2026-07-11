@@ -1,16 +1,17 @@
 import crowdService from '../services/crowd.service.js';
 import recommendationService from '../services/recommendation.service.js';
 
-export const getOrganizerDashboard = (req, res, next) => {
+export const getOrganizerDashboard = async (req, res, next) => {
   try {
-    const crowd = crowdService.getLiveCrowdData();
-    const recommendations = recommendationService.getRecommendations();
+    const crowd = await crowdService.getLiveCrowdData();
+    const recommendations = await recommendationService.getRecommendations();
+    const alerts = await crowdService.getAlerts();
     
     // Mock analytics
     const analytics = {
       totalAttendance: 68402,
       expectedAttendance: 66800,
-      activeAlerts: crowdService.getAlerts().length
+      activeAlerts: alerts.length
     };
 
     res.status(200).json({

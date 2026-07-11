@@ -1,8 +1,8 @@
 import crowdService from './crowd.service.js';
 
 class RecommendationService {
-  getRecommendations() {
-    const crowd = crowdService.getLiveCrowdData();
+  async getRecommendations() {
+    const crowd = await crowdService.getLiveCrowdData();
     const recs = [];
     
     crowd.forEach(c => {
