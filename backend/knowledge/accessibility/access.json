@@ -1,0 +1,14 @@
+{
+  "wheelchairAccess": [
+    {"location": "Gate A", "ramp": true},
+    {"location": "Gate B", "elevator": true}
+  ],
+  "medicalStations": [
+    {"id": "Main Medical", "location": "West Wing Level 1"},
+    {"id": "Aux Medical", "location": "East Wing Level 2"}
+  ],
+  "washrooms": [
+    {"location": "North Entrance", "type": "Accessible"},
+    {"location": "East Wing Level 1", "type": "General"}
+  ]
+}

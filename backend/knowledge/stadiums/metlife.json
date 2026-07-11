@@ -1,0 +1,12 @@
+{
+  "stadium": "MetLife Stadium",
+  "entryGates": [
+    {"id": "Gate A", "location": "North", "status": "OPEN"},
+    {"id": "Gate B", "location": "East", "status": "OPEN"},
+    {"id": "Gate 6", "location": "South", "status": "OPEN"}
+  ],
+  "foodCourts": [
+    {"name": "Main Concourse Food Court", "location": "Level 1"}
+  ],
+  "parkingZones": 5
+}
