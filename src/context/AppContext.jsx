@@ -21,6 +21,12 @@ export function AppProvider({ children }) {
 
   const [currentLocationInsideStadium, setCurrentLocationInsideStadium] = useState(null);
 
+  const [accessibilityMode, setAccessibilityMode] = useState(() => {
+    return localStorage.getItem('accessibilityMode') === 'true';
+  });
+
+  const [isListening, setIsListening] = useState(false);
+
   // Sync to localStorage
   useEffect(() => {
     if (selectedMatch) localStorage.setItem('selectedMatch', JSON.stringify(selectedMatch));
@@ -36,6 +42,14 @@ export function AppProvider({ children }) {
     localStorage.setItem('selectedLanguage', selectedLanguage);
   }, [selectedLanguage]);
 
+  useEffect(() => {
+    localStorage.setItem('accessibilityMode', accessibilityMode);
+  }, [accessibilityMode]);
+
+  const toggleAccessibility = () => {
+    setAccessibilityMode(!accessibilityMode);
+  };
+
   return (
     <AppContext.Provider value={{ 
       selectedMatch, 
@@ -45,7 +59,11 @@ export function AppProvider({ children }) {
       selectedLanguage,
       setSelectedLanguage,
       currentLocationInsideStadium,
-      setCurrentLocationInsideStadium
+      setCurrentLocationInsideStadium,
+      accessibilityMode,
+      toggleAccessibility,
+      isListening,
+      setIsListening
     }}>
       {children}
     </AppContext.Provider>

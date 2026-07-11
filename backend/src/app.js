@@ -19,6 +19,7 @@ import aiRoutes from './routes/ai.routes.js';
 import knowledgeRoutes from './routes/knowledge.routes.js';
 import matchRoutes from './routes/match.routes.js';
 import stadiumRoutes from './routes/stadium.routes.js';
+import alertRoutes from './routes/alert.routes.js';
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use(`${API_PREFIX}/ai`, aiRoutes);
 app.use(`${API_PREFIX}/knowledge`, knowledgeRoutes);
 app.use(`${API_PREFIX}/matches`, matchRoutes);
 app.use(`${API_PREFIX}/stadiums`, stadiumRoutes);
+app.use(`${API_PREFIX}/alerts`, alertRoutes);
 
 // Protected Routes with Audit Logging
 app.use(`${API_PREFIX}/fan`, authenticate, authorizeRole(ROLES.FAN, ROLES.ORGANIZER), logActivity('VIEW_FAN_DASHBOARD'), fanRoutes);

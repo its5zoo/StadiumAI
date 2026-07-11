@@ -10,6 +10,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
     { to: "/fan/dashboard", icon: <LayoutDashboard size={20} />, label: "Fan Dashboard" },
     { to: "/fan/map", icon: <Map size={20} />, label: "Smart Map" },
     { to: "/fan/assistant", icon: <BotMessageSquare size={20} />, label: "Unified AI" },
+    { to: "/fan/profile", icon: <Settings size={20} />, label: "Profile" },
   ];
 
   const organizerLinks = [

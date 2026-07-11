@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Compass, BotMessageSquare, Globe, Accessibility, AlertTriangle } from 'lucide-react';
+import { Compass, BotMessageSquare, Globe, Accessibility, AlertTriangle, MapPin, Coffee, Phone, Mic, Bell, CloudRain } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
 import socketService from '../services/socket.service';
@@ -8,21 +8,23 @@ import toast from 'react-hot-toast';
 
 export default function FanDashboard() {
   const navigate = useNavigate();
-  const { selectedMatch, selectedStadium } = useContext(AppContext);
-  const [crowdData, setCrowdData] = useState([]);
+  const { selectedMatch, selectedStadium, selectedLanguage, isListening, setIsListening } = useContext(AppContext);
+  const [alerts, setAlerts] = useState([]);
 
   useEffect(() => {
-    // If we have selectedStadium, initialize crowdData based on its zones
-    if (selectedStadium && selectedStadium.zones) {
-      setCrowdData(selectedStadium.zones.map(z => ({
-        zone: z.name,
-        density: Math.floor(Math.random() * 100), // Mock dynamic density for now
-        status: z.status
-      })));
-    }
-  }, [selectedStadium]);
+    const fetchAlerts = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/v1/alerts');
+        const data = await res.json();
+        if (data.success) {
+          setAlerts(data.data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch alerts", e);
+      }
+    };
+    fetchAlerts();
 
-  useEffect(() => {
     const socket = socketService.connect();
     if (socket) {
       socket.on('emergency-broadcast', (data) => {
@@ -38,112 +40,153 @@ export default function FanDashboard() {
             </button>
           </div>
         ), { duration: 30000, style: { border: '2px solid red', backgroundColor: '#1e293b', color: '#fff' } });
-      });
-
-      socket.on('crowd-update', (data) => {
-        // Here we could filter crowd-update by stadiumId in a real app
-        setCrowdData(data);
+        
+        setAlerts(prev => [{ id: Date.now(), message: data.message, time: "Just now", type: "error" }, ...prev]);
       });
     }
 
     return () => {
       if (socket) {
         socket.off('emergency-broadcast');
-        socket.off('crowd-update');
       }
     };
   }, []);
 
+  const triggerVoice = () => {
+    // Toggling the global voice assistant state.
+    // In a real app, this might trigger the exact same logic as the Navbar mic button.
+    setIsListening(true);
+    toast("Listening... Speak your query.", { icon: '🎤' });
+    // Simulate stopping after a bit for demo purposes if speech recognition is handled in navbar
+    setTimeout(() => setIsListening(false), 3000);
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-white">Fan Hub <span className="text-sm font-normal text-green-500 ml-2 animate-pulse">● LIVE</span></h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-white">Fan Dashboard</h1>
+        <button 
+          onClick={triggerVoice}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold transition-all ${isListening ? 'bg-red-500 animate-pulse text-white' : 'bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/20'}`}
+        >
+          <Mic size={20} />
+          {isListening ? 'Listening...' : 'Ask AI'}
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Main Content Area */}
+        {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
-          <Card title="🏟 Match Information" className="border border-primary/20 bg-gradient-to-r from-dark to-primary/10">
-            <div className="flex justify-between items-center mt-4">
-              <div className="text-center">
-                <p className="text-sm text-gray-400">Home</p>
-                <h3 className="text-2xl font-bold text-white">{selectedMatch?.homeTeam || 'USA'}</h3>
+          
+          {/* Section 1: Today's Match Card */}
+          <Card className="border border-primary/20 bg-gradient-to-br from-[#1e293b] to-primary/10 overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <Compass size={120} />
+            </div>
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <p className="text-primary font-bold tracking-wider text-sm uppercase">{selectedMatch?.tournamentPhase || 'Group Stage'}</p>
+                <h2 className="text-2xl font-bold text-white mt-1">{selectedStadium?.name || 'MetLife Stadium'}</h2>
               </div>
-              <div className="text-center px-4">
-                <p className="text-xs text-fifagold font-bold mb-1">VS</p>
-                <p className="text-sm bg-primary/20 text-primary px-3 py-1 rounded-full">
-                  {selectedMatch?.kickoff ? new Date(selectedMatch.kickoff).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '20:00 EST'}
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-gray-400">Away</p>
-                <h3 className="text-2xl font-bold text-white">{selectedMatch?.awayTeam || 'BRA'}</h3>
+              <div className="flex items-center gap-2 text-gray-400 bg-black/20 px-3 py-1.5 rounded-full text-sm border border-gray-700">
+                <CloudRain size={16} className="text-blue-400" />
+                <span>72°F Light Rain</span>
               </div>
             </div>
-            <p className="text-center text-sm text-gray-400 mt-4 pt-4 border-t border-gray-700">
-              {selectedStadium?.name || 'MetLife Stadium'} • {selectedMatch?.tournamentPhase || 'Group Stage'}
-            </p>
+
+            <div className="flex justify-between items-center mt-4 bg-black/20 p-6 rounded-2xl border border-gray-800/50 backdrop-blur-sm">
+              <div className="text-center w-1/3">
+                <h3 className="text-3xl font-black text-white">{selectedMatch?.homeTeam || 'USA'}</h3>
+                <p className="text-sm text-gray-400 mt-1">Home</p>
+              </div>
+              <div className="text-center w-1/3 flex flex-col items-center">
+                <p className="text-xs text-fifagold font-bold mb-2 uppercase tracking-widest">VS</p>
+                <div className="bg-primary/20 text-primary border border-primary/30 px-4 py-2 rounded-lg font-mono font-bold">
+                  {selectedMatch?.kickoff ? new Date(selectedMatch.kickoff).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '20:00 EST'}
+                </div>
+              </div>
+              <div className="text-center w-1/3">
+                <h3 className="text-3xl font-black text-white">{selectedMatch?.awayTeam || 'BRA'}</h3>
+                <p className="text-sm text-gray-400 mt-1">Away</p>
+              </div>
+            </div>
           </Card>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div 
-              onClick={() => navigate('/fan/assistant')} 
-              className="bg-[#1e293b] p-6 rounded-xl border border-gray-700 cursor-pointer hover:border-primary transition-colors flex flex-col items-center justify-center gap-3"
-            >
-              <div className="bg-primary/20 p-4 rounded-full text-primary">
-                <BotMessageSquare size={32} />
-              </div>
-              <span className="font-bold text-white">Ask MatchDay AI</span>
-            </div>
-            
-            <div 
-              onClick={() => navigate('/fan/map')} 
-              className="bg-[#1e293b] p-6 rounded-xl border border-gray-700 cursor-pointer hover:border-accent transition-colors flex flex-col items-center justify-center gap-3"
-            >
-              <div className="bg-accent/20 p-4 rounded-full text-accent">
-                <Compass size={32} />
-              </div>
-              <span className="font-bold text-white">Smart Map</span>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div 
-              onClick={() => navigate('/fan/assistant')} 
-              className="bg-[#1e293b] p-4 rounded-xl border border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors flex items-center gap-4"
-            >
-              <Globe className="text-blue-400" />
-              <span className="text-white">Translate</span>
-            </div>
-            
-            <div 
-              onClick={() => navigate('/fan/assistant')} 
-              className="bg-[#1e293b] p-4 rounded-xl border border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors flex items-center gap-4"
-            >
-              <Accessibility className="text-fifagold" />
-              <span className="text-white">Accessibility</span>
+          {/* Section 2: Quick Actions */}
+          <div>
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              Quick Actions
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <button onClick={() => navigate('/fan/map')} className="bg-[#1e293b] p-4 rounded-xl border border-gray-700 hover:border-primary hover:bg-gray-800 transition-all flex flex-col items-center justify-center gap-3 group">
+                <div className="bg-blue-500/20 p-3 rounded-full text-blue-400 group-hover:scale-110 transition-transform">
+                  <Compass size={24} />
+                </div>
+                <span className="text-sm font-medium text-gray-300">Find Seat</span>
+              </button>
+              <button onClick={() => navigate('/fan/assistant')} className="bg-[#1e293b] p-4 rounded-xl border border-gray-700 hover:border-primary hover:bg-gray-800 transition-all flex flex-col items-center justify-center gap-3 group">
+                <div className="bg-green-500/20 p-3 rounded-full text-green-400 group-hover:scale-110 transition-transform">
+                  <MapPin size={24} />
+                </div>
+                <span className="text-sm font-medium text-gray-300">Nearest Washroom</span>
+              </button>
+              <button onClick={() => navigate('/fan/assistant')} className="bg-[#1e293b] p-4 rounded-xl border border-gray-700 hover:border-primary hover:bg-gray-800 transition-all flex flex-col items-center justify-center gap-3 group">
+                <div className="bg-orange-500/20 p-3 rounded-full text-orange-400 group-hover:scale-110 transition-transform">
+                  <Coffee size={24} />
+                </div>
+                <span className="text-sm font-medium text-gray-300">Food Nearby</span>
+              </button>
+              <button onClick={() => toast("Contacting Medical Team...", {icon:'🚑'})} className="bg-[#1e293b] p-4 rounded-xl border border-red-500/30 hover:border-red-500 hover:bg-red-500/10 transition-all flex flex-col items-center justify-center gap-3 group">
+                <div className="bg-red-500/20 p-3 rounded-full text-red-500 group-hover:scale-110 transition-transform">
+                  <Phone size={24} />
+                </div>
+                <span className="text-sm font-medium text-red-400">Emergency</span>
+              </button>
             </div>
           </div>
+
         </div>
         
-        {/* Sidebar Status Area */}
+        {/* Right Column */}
         <div className="space-y-6">
-          <Card title="Live Stadium Status">
-            <div className="space-y-4 mt-4">
-              {crowdData.map((zone, i) => (
-                <div key={i}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-300">{zone.zone}</span>
-                    <span className={zone.status === 'HIGH' ? 'text-red-500 font-bold' : zone.status === 'MEDIUM' ? 'text-yellow-500' : 'text-green-500'}>{zone.status}</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className={`h-2 rounded-full ${zone.status === 'HIGH' ? 'bg-red-500' : zone.status === 'MEDIUM' ? 'bg-yellow-500' : 'bg-green-500'}`} style={{ width: `${zone.density}%` }}></div>
-                  </div>
+          
+          {/* Section 3: Mini Stadium Map */}
+          <Card title="Live Mini Map" className="cursor-pointer hover:border-primary transition-colors" onClick={() => navigate('/fan/map')}>
+            <div className="mt-4 bg-black/40 rounded-xl border border-gray-800 p-4 aspect-square flex items-center justify-center relative overflow-hidden group">
+               {selectedStadium ? (
+                 <img 
+                   src={`/assets/stadiums/${selectedStadium.id}/map.svg`} 
+                   alt={selectedStadium.name}
+                   className="w-full h-full opacity-70 group-hover:opacity-100 transition-opacity" 
+                 />
+               ) : (
+                 <div className="text-gray-500 text-sm">No stadium loaded</div>
+               )}
+               <div className="absolute inset-0 bg-gradient-to-t from-dark/80 to-transparent pointer-events-none" />
+               <div className="absolute bottom-4 left-4 text-xs font-bold text-primary bg-primary/20 px-2 py-1 rounded border border-primary/30">
+                 Tap to open Interactive Map
+               </div>
+            </div>
+          </Card>
+
+          {/* Section 4: Live Alerts Feed */}
+          <Card title={<div className="flex items-center gap-2"><Bell size={20} className="text-fifagold"/> Alerts Feed</div>}>
+            <div className="mt-4 space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+              {alerts.length === 0 && <p className="text-gray-500 text-sm">No active alerts.</p>}
+              {alerts.map(alert => (
+                <div key={alert.id} className={`p-3 rounded-lg border text-sm ${
+                  alert.type === 'error' ? 'bg-red-500/10 border-red-500/30 text-red-200' :
+                  alert.type === 'warning' ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-200' :
+                  'bg-blue-500/10 border-blue-500/30 text-blue-200'
+                }`}>
+                  <p>{alert.message}</p>
+                  <p className="text-xs opacity-50 mt-2">{alert.time} • Auto-translated to {selectedLanguage}</p>
                 </div>
               ))}
             </div>
           </Card>
+
         </div>
       </div>
     </div>
