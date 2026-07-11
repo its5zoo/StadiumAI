@@ -1,18 +1,15 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Users, AlertTriangle, ShieldCheck, DoorOpen } from 'lucide-react';
+import { Users, AlertTriangle, ShieldCheck, DoorOpen, Activity, AlertCircle, CheckCircle } from 'lucide-react';
 import Card from '../components/Card';
-import socketService from '../services/socket.service';
 import { AppContext } from '../context/AppContext';
 import toast from 'react-hot-toast';
 
 export default function OrganizerDashboard() {
-  const { selectedMatch, selectedStadium } = useContext(AppContext);
-  const [stats, setStats] = useState({ activeVolunteers: 0, openGates: 0, criticalAlerts: 0 });
-  const [crowdData, setCrowdData] = useState([]);
-  const [aiAnalysis, setAiAnalysis] = useState("Waiting for real-time updates...");
-  
+  const { selectedMatch, selectedStadium, heatmapData, recommendations, incidents } = useContext(AppContext);
+  const [stats, setStats] = useState({ fansInside: 0, gateUtilization: "0%", parkingOccupancy: "0%", emergencyCases: 0, activeAlerts: 0 });
+
   useEffect(() => {
-    // 1. Initial HTTP Data Fetch
+    // Initial fetch for dashboard static/initial metrics
     const fetchDashboard = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -25,145 +22,127 @@ export default function OrganizerDashboard() {
         console.error("Dashboard fetch error:", error);
       }
     };
-    
     fetchDashboard();
-
-    // 2. Connect WebSockets for live data
-    const socket = socketService.connect();
-    if (socket) {
-      socket.on('crowd-update', (data) => {
-        setCrowdData(data);
-      });
-
-      socket.on('recommendation-generated', (data) => {
-        setAiAnalysis(data.message);
-        toast("New AI Recommendation Generated", { icon: '💡' });
-      });
-    }
-
-    // 3. Fallback polling for AI analysis if sockets fail
-    const pollInterval = setInterval(async () => {
-      if (socket && socket.connected) return; // Skip polling if socket is connected
-      
-      try {
-        const token = localStorage.getItem('token');
-        const aiRes = await fetch('http://localhost:5000/api/v1/ai/crowd-analysis', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const aiData = await aiRes.json();
-        if (aiData.success) setAiAnalysis(aiData.data.analysis);
-      } catch (err) {
-        console.warn("Polling fallback failed.");
-      }
-    }, 15000);
-
-    return () => {
-      clearInterval(pollInterval);
-      if (socket) {
-        socket.off('crowd-update');
-        socket.off('recommendation-generated');
-      }
-    };
   }, []);
-
-  const handleBroadcast = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const msg = prompt("Enter emergency broadcast message for all fans:");
-      if (!msg) return;
-
-      const res = await fetch('http://localhost:5000/api/v1/organizer/emergency', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ message: msg })
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Broadcast sent to all fans");
-      } else {
-        toast.error("Broadcast failed: " + data.message);
-      }
-    } catch (e) {
-      toast.error("Broadcast offline.");
-    }
-  };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-white">Organizer Dashboard <span className="text-sm font-normal text-green-500 ml-2 animate-pulse">● LIVE</span></h1>
-        <button onClick={handleBroadcast} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold transition-colors">
-          Emergency Broadcast
-        </button>
+        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+          Operations Center
+          <span className="text-xs font-bold text-green-500 bg-green-500/20 px-2 py-1 rounded animate-pulse">● LIVE</span>
+        </h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {/* SECTION 1 — Match Overview */}
+      <Card className="border border-fifagold/20 bg-gradient-to-r from-[#0f172a] to-fifagold/5">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+          <div className="text-center md:text-left">
+            <p className="text-sm text-gray-400">Current Match</p>
+            <h3 className="text-xl font-bold text-white">{selectedMatch?.homeTeam || 'Home'} vs {selectedMatch?.awayTeam || 'Away'}</h3>
+          </div>
+          <div className="text-center md:text-left border-l border-gray-700 pl-6">
+            <p className="text-sm text-gray-400">Current Stadium</p>
+            <h3 className="text-xl font-bold text-primary">{selectedStadium?.name || 'MetLife Stadium'}</h3>
+          </div>
+          <div className="text-center md:text-left border-l border-gray-700 pl-6">
+            <p className="text-sm text-gray-400">Total Attendance</p>
+            <h3 className="text-xl font-bold text-white">82,500 / {selectedStadium?.capacity || '82,500'}</h3>
+          </div>
+          <div className="text-center md:text-left border-l border-gray-700 pl-6">
+            <p className="text-sm text-gray-400">Active Alerts</p>
+            <h3 className="text-xl font-bold text-red-500">{stats.activeAlerts}</h3>
+          </div>
+        </div>
+      </Card>
+
+      {/* SECTION 2 — Operations Metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         <Card className="flex items-center gap-4">
           <div className="p-4 bg-primary/20 rounded-full text-primary"><Users size={32} /></div>
-          <div><p className="text-gray-400">Volunteers</p><h3 className="text-3xl font-bold text-white">{stats.activeVolunteers}</h3></div>
+          <div><p className="text-gray-400 text-sm">Fans Inside</p><h3 className="text-2xl font-bold text-white">{stats.fansInside}</h3></div>
         </Card>
         <Card className="flex items-center gap-4">
           <div className="p-4 bg-green-500/20 rounded-full text-green-500"><DoorOpen size={32} /></div>
-          <div><p className="text-gray-400">Open Gates</p><h3 className="text-3xl font-bold text-white">{stats.openGates}</h3></div>
+          <div><p className="text-gray-400 text-sm">Gate Util.</p><h3 className="text-2xl font-bold text-white">{stats.gateUtilization}</h3></div>
+        </Card>
+        <Card className="flex items-center gap-4">
+          <div className="p-4 bg-yellow-500/20 rounded-full text-yellow-500"><Activity size={32} /></div>
+          <div><p className="text-gray-400 text-sm">Parking Occ.</p><h3 className="text-2xl font-bold text-white">{stats.parkingOccupancy}</h3></div>
         </Card>
         <Card className="flex items-center gap-4 border border-red-500/30">
           <div className="p-4 bg-red-500/20 rounded-full text-red-500"><AlertTriangle size={32} /></div>
-          <div><p className="text-gray-400">Critical Alerts</p><h3 className="text-3xl font-bold text-red-500">{stats.criticalAlerts}</h3></div>
+          <div><p className="text-gray-400 text-sm">Emergency Cases</p><h3 className="text-2xl font-bold text-red-500">{stats.emergencyCases}</h3></div>
         </Card>
       </div>
 
-      <div className="mb-6">
-        <Card className="border border-fifagold/20 bg-gradient-to-r from-dark to-fifagold/10 py-4">
-            <div className="flex justify-around items-center">
-              <div className="text-center">
-                <p className="text-sm text-gray-400">Home</p>
-                <h3 className="text-2xl font-bold text-white">{selectedMatch?.homeTeam || 'USA'}</h3>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-fifagold font-bold mb-1">VS</p>
-                <p className="text-sm bg-fifagold/20 text-fifagold px-3 py-1 rounded-full">
-                  {selectedMatch?.kickoff ? new Date(selectedMatch.kickoff).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '20:00 EST'}
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-gray-400">Away</p>
-                <h3 className="text-2xl font-bold text-white">{selectedMatch?.awayTeam || 'BRA'}</h3>
-              </div>
-              <div className="text-right border-l border-gray-700 pl-6">
-                <p className="text-sm text-gray-400">Active Stadium</p>
-                <h3 className="text-xl font-bold text-white">{selectedStadium?.name || 'MetLife Stadium'}</h3>
-              </div>
-            </div>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="Live Crowd Density">
-          <div className="space-y-4 mt-4">
-            {crowdData.length > 0 ? crowdData.map((zone, i) => (
-              <div key={i}>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-300">{zone.zone}</span>
-                  <span className={zone.status === 'HIGH' ? 'text-red-500 font-bold' : zone.status === 'MEDIUM' ? 'text-yellow-500' : 'text-green-500'}>{zone.status}</span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left Column */}
+        <div className="col-span-2 space-y-6">
+          
+          {/* SECTION 3 — Crowd Status */}
+          <Card title="Live Crowd Status">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              {(heatmapData.length > 0 ? heatmapData : (selectedStadium?.zones || [])).map((zone, i) => {
+                const density = zone.density || 0;
+                const status = density > 80 ? 'HIGH' : density > 50 ? 'MEDIUM' : 'LOW';
+                return (
+                <div key={i} className="bg-[#1e293b] p-4 rounded-xl border border-gray-700">
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="font-bold text-white">{zone.zone || zone.name}</span>
+                    <span className={`font-bold ${status === 'HIGH' ? 'text-red-500' : status === 'MEDIUM' ? 'text-yellow-500' : 'text-green-500'}`}>
+                      {status}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-800 rounded-full h-2">
+                    <div className={`h-2 rounded-full ${status === 'HIGH' ? 'bg-red-500' : status === 'MEDIUM' ? 'bg-yellow-500' : 'bg-green-500'}`} style={{ width: `${density || 10}%` }}></div>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div className={`h-2 rounded-full ${zone.status === 'HIGH' ? 'bg-red-500' : zone.status === 'MEDIUM' ? 'bg-yellow-500' : 'bg-green-500'}`} style={{ width: `${zone.density}%` }}></div>
-                </div>
-              </div>
-            )) : <p className="text-gray-500 italic">Connecting to live feed...</p>}
-          </div>
-        </Card>
-
-        <Card title="AI Operations Recommendations" className="border-primary/50 border">
-          <div className="flex gap-4 items-start mt-4">
-            <div className="bg-[#0f172a] p-4 rounded-xl text-gray-300 leading-relaxed border border-gray-700 w-full">
-              {aiAnalysis}
+              )})}
             </div>
-          </div>
-        </Card>
+          </Card>
+
+          {/* SECTION 4 — AI Recommendations */}
+          <Card title={<div className="flex items-center gap-2">AI Decision Support <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">Real-Time</span></div>}>
+            <div className="space-y-4 mt-4 max-h-64 overflow-y-auto custom-scrollbar pr-2">
+              {recommendations.length > 0 ? recommendations.map((rec, i) => (
+                <div key={i} className="flex gap-3 bg-[#0f172a] border border-primary/30 p-4 rounded-xl items-start">
+                  <BotMessageSquare className="text-primary mt-1 shrink-0" size={20} />
+                  <p className="text-gray-200">{rec.message || rec}</p>
+                </div>
+              )) : (
+                <div className="text-gray-500 italic text-center p-4">AI is monitoring crowd patterns...</div>
+              )}
+            </div>
+          </Card>
+
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-6">
+          
+          {/* SECTION 5 — Incident Feed */}
+          <Card title="Live Incident Feed" className="h-full">
+            <div className="space-y-4 mt-4">
+              {incidents.length > 0 ? incidents.map((inc, i) => (
+                <div key={i} className="border-l-4 border-yellow-500 bg-[#1e293b] p-3 rounded-r-lg">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="font-bold text-sm text-yellow-500">{inc.zone}</span>
+                    <span className="text-xs text-gray-500">{new Date(inc.time).toLocaleTimeString()}</span>
+                  </div>
+                  <p className="text-sm text-gray-300">{inc.desc || inc.message}</p>
+                </div>
+              )) : (
+                <div className="flex flex-col items-center justify-center text-gray-500 p-8 h-48 border border-dashed border-gray-700 rounded-lg">
+                  <CheckCircle size={32} className="mb-2 text-green-500 opacity-50" />
+                  <p>No active incidents</p>
+                </div>
+              )}
+            </div>
+          </Card>
+
+        </div>
       </div>
     </div>
   );

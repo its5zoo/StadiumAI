@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { io } from 'socket.io-client';
 
 export const AppContext = createContext();
 
@@ -27,6 +28,15 @@ export function AppProvider({ children }) {
 
   const [isListening, setIsListening] = useState(false);
 
+  // Real-time Organizer states
+  const [heatmapData, setHeatmapData] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
+  const [incidents, setIncidents] = useState([]);
+  const [broadcasts, setBroadcasts] = useState([]);
+
+  // Socket
+  const [socket, setSocket] = useState(null);
+
   // Sync to localStorage
   useEffect(() => {
     if (selectedMatch) localStorage.setItem('selectedMatch', JSON.stringify(selectedMatch));
@@ -46,6 +56,49 @@ export function AppProvider({ children }) {
     localStorage.setItem('accessibilityMode', accessibilityMode);
   }, [accessibilityMode]);
 
+  // Socket Connection Effect
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userRole = localStorage.getItem('userRole'); // We can extract role or rely on token parsing in backend
+    
+    // For demo MVP fallbacks, if no real token, use mock tokens
+    let auth_token = token;
+    if (!token && userRole) {
+      auth_token = userRole === 'ORGANIZER' ? 'mock-jwt-org' : 'mock-jwt-fan';
+    }
+
+    if (auth_token) {
+      const newSocket = io('http://localhost:5000', {
+        auth: { token: auth_token }
+      });
+
+      newSocket.on('connect', () => {
+        console.log('Connected to Real-Time Socket');
+      });
+
+      newSocket.on('crowd-update', (data) => {
+        setHeatmapData(data);
+      });
+
+      newSocket.on('recommendation-generated', (data) => {
+        setRecommendations(prev => [{ ...data, id: Date.now() }, ...prev]);
+        toast("New AI Recommendation generated!", { icon: '🤖' });
+      });
+
+      newSocket.on('broadcast', (data) => {
+        setBroadcasts(prev => [data, ...prev]);
+        toast(data.message, { 
+          icon: data.type === 'EMERGENCY' ? '🚨' : data.type === 'WARNING' ? '⚠️' : '📢',
+          duration: 10000 
+        });
+      });
+
+      setSocket(newSocket);
+
+      return () => newSocket.disconnect();
+    }
+  }, []);
+
   const toggleAccessibility = () => {
     setAccessibilityMode(!accessibilityMode);
   };
@@ -63,7 +116,12 @@ export function AppProvider({ children }) {
       accessibilityMode,
       toggleAccessibility,
       isListening,
-      setIsListening
+      setIsListening,
+      heatmapData,
+      recommendations,
+      incidents,
+      broadcasts,
+      socket
     }}>
       {children}
     </AppContext.Provider>

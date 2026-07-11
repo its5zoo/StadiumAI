@@ -14,17 +14,18 @@ import { ROLES } from './constants/roles.js';
 import healthRoutes from './routes/health.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import fanRoutes from './routes/fan.routes.js';
-import organizerRoutes from './routes/organizer.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import knowledgeRoutes from './routes/knowledge.routes.js';
 import matchRoutes from './routes/match.routes.js';
 import stadiumRoutes from './routes/stadium.routes.js';
 import alertRoutes from './routes/alert.routes.js';
+import organizerRoutes from './routes/organizer.routes.js';
 
 const app = express();
 
-app.use(helmet());
+// Global Middlewares
 app.use(cors());
+app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(morgan('dev'));
@@ -39,13 +40,17 @@ app.use(limiter);
 
 const API_PREFIX = '/api/v1';
 
-app.use(`${API_PREFIX}/health`, healthRoutes);
+// Public Routes
 app.use(`${API_PREFIX}/auth`, authRoutes);
+app.use(`${API_PREFIX}/health`, healthRoutes);
+
+// Shared/Unprotected domain for now, protect as needed
 app.use(`${API_PREFIX}/ai`, aiRoutes);
 app.use(`${API_PREFIX}/knowledge`, knowledgeRoutes);
 app.use(`${API_PREFIX}/matches`, matchRoutes);
 app.use(`${API_PREFIX}/stadiums`, stadiumRoutes);
 app.use(`${API_PREFIX}/alerts`, alertRoutes);
+app.use(`${API_PREFIX}/organizer`, organizerRoutes);
 
 // Protected Routes with Audit Logging
 app.use(`${API_PREFIX}/fan`, authenticate, authorizeRole(ROLES.FAN, ROLES.ORGANIZER), logActivity('VIEW_FAN_DASHBOARD'), fanRoutes);
