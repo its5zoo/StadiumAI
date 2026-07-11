@@ -28,19 +28,27 @@ export default function MatchSelection() {
   };
 
   const handleMatchSelect = async (match) => {
+    console.log("Match clicked:", match);
     setSelectedMatch(match);
     
     // Auto-select stadium
     try {
+      console.log(`Fetching stadium details: http://localhost:5000/api/v1/stadiums/${match.stadiumId}`);
       const res = await fetch(`http://localhost:5000/api/v1/stadiums/${match.stadiumId}`);
       const data = await res.json();
+      console.log("Stadium API response:", data);
+      
       if (data.success) {
         setSelectedStadium(data.data);
-        navigate('/select-role');
+        // Wait for context to update before navigating to avoid immediate redirect back
+        setTimeout(() => {
+          navigate('/select-role');
+        }, 100);
       } else {
         toast.error("Failed to load stadium details");
       }
     } catch (err) {
+      console.error("Network error:", err);
       toast.error("Network error loading stadium");
     }
   };
