@@ -18,6 +18,11 @@ import FanAssistant from './pages/FanAssistant';
 import FanMap from './pages/FanMap';
 import FanProfile from './pages/FanProfile';
 import OrganizerDashboard from './pages/OrganizerDashboard';
+import OrganizerHeatmap from './pages/OrganizerHeatmap';
+import OrganizerCommandCenter from './pages/OrganizerCommandCenter';
+import OrganizerIncidents from './pages/OrganizerIncidents';
+import OrganizerBroadcast from './pages/OrganizerBroadcast';
+import OrganizerAnalytics from './pages/OrganizerAnalytics';
 
 function AppContent() {
   const { accessibilityMode } = useContext(AppContext);
@@ -48,7 +53,13 @@ function AppContent() {
           {/* Organizer only routes */}
           <Route element={<ProtectedRoute allowedRoles={['ORGANIZER']} />}>
             <Route element={<DashboardLayout />}>
-              <Route path="/organizer" element={<OrganizerDashboard />} />
+              <Route path="/organizer" element={<Navigate to="/organizer/dashboard" replace />} />
+              <Route path="/organizer/dashboard" element={<OrganizerDashboard />} />
+              <Route path="/organizer/heatmap" element={<OrganizerHeatmap />} />
+              <Route path="/organizer/control-center" element={<OrganizerCommandCenter />} />
+              <Route path="/organizer/incidents" element={<OrganizerIncidents />} />
+              <Route path="/organizer/broadcast" element={<OrganizerBroadcast />} />
+              <Route path="/organizer/analytics" element={<OrganizerAnalytics />} />
             </Route>
           </Route>
         </Routes>

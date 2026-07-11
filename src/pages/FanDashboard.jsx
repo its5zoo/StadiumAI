@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 export default function FanDashboard() {
   const navigate = useNavigate();
-  const { selectedMatch, selectedStadium, selectedLanguage, isListening, setIsListening } = useContext(AppContext);
+  const { selectedMatch, selectedStadium, selectedLanguage, isListening, setIsListening, broadcasts } = useContext(AppContext);
   const [alerts, setAlerts] = useState([]);
 
   useEffect(() => {
@@ -171,17 +171,23 @@ export default function FanDashboard() {
           </Card>
 
           {/* Section 4: Live Alerts Feed */}
-          <Card title={<div className="flex items-center gap-2"><Bell size={20} className="text-fifagold"/> Alerts Feed</div>}>
-            <div className="mt-4 space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-              {alerts.length === 0 && <p className="text-gray-500 text-sm">No active alerts.</p>}
-              {alerts.map(alert => (
-                <div key={alert.id} className={`p-3 rounded-lg border text-sm ${
-                  alert.type === 'error' ? 'bg-red-500/10 border-red-500/30 text-red-200' :
-                  alert.type === 'warning' ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-200' :
-                  'bg-blue-500/10 border-blue-500/30 text-blue-200'
-                }`}>
-                  <p>{alert.message}</p>
-                  <p className="text-xs opacity-50 mt-2">{alert.time} • Auto-translated to {selectedLanguage}</p>
+          <Card title="Live Alerts Feed" className="border border-red-500/20">
+            <div className="space-y-4 mt-4 h-64 overflow-y-auto">
+              {broadcasts.length > 0 ? broadcasts.map((alert, i) => (
+                <div key={i} className="flex gap-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                  <AlertTriangle className="text-red-500 shrink-0" />
+                  <div>
+                    <p className="text-white text-sm">{alert.message}</p>
+                    <p className="text-gray-400 text-xs mt-1">Just now • {alert.type}</p>
+                  </div>
+                </div>
+              )) : alerts.map((alert, i) => (
+                <div key={i} className="flex gap-4 p-3 bg-[#1e293b] rounded-lg">
+                  <AlertTriangle className={alert.type === 'warning' ? 'text-yellow-500 shrink-0' : 'text-blue-500 shrink-0'} />
+                  <div>
+                    <p className="text-white text-sm">{alert.message}</p>
+                    <p className="text-gray-400 text-xs mt-1">{alert.time}</p>
+                  </div>
                 </div>
               ))}
             </div>

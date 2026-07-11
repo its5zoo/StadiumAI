@@ -14,7 +14,12 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
   ];
 
   const organizerLinks = [
-    { to: "/organizer", icon: <Settings size={20} />, label: "Control Center" },
+    { to: "/organizer/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+    { to: "/organizer/control-center", icon: <Settings size={20} />, label: "Command Center" },
+    { to: "/organizer/heatmap", icon: <Map size={20} />, label: "Live Heatmap" },
+    { to: "/organizer/incidents", icon: <BotMessageSquare size={20} />, label: "Incidents" },
+    { to: "/organizer/broadcast", icon: <BotMessageSquare size={20} />, label: "Broadcast" },
+    { to: "/organizer/analytics", icon: <LayoutDashboard size={20} />, label: "Analytics" },
   ];
 
   const links = user?.role === 'ORGANIZER' ? organizerLinks : fanLinks;
