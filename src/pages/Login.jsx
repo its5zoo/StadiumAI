@@ -1,16 +1,23 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Card from '../components/Card';
 import toast from 'react-hot-toast';
 
 export default function Login() {
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('fan@example.com');
   const [password, setPassword] = useState('password');
   const [loading, setLoading] = useState(false);
   
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const role = searchParams.get('role');
+    if (role === 'ORGANIZER') setEmail('org@example.com');
+    else if (role === 'FAN') setEmail('fan@example.com');
+  }, [searchParams]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -35,14 +42,14 @@ export default function Login() {
       if (data.data.user.role === 'ORGANIZER') {
         navigate('/organizer');
       } else {
-        navigate('/fan');
+        navigate('/fan/dashboard');
       }
     } catch (err) {
       if (err.message.includes('Failed to fetch')) {
         toast.error("Backend is offline. Using local mock session.");
         if (email === 'fan@example.com') {
           login('mock-jwt-fan', { id: '1', role: 'FAN', name: 'John Fan' });
-          navigate('/fan');
+          navigate('/fan/dashboard');
         } else if (email === 'org@example.com') {
           login('mock-jwt-org', { id: '2', role: 'ORGANIZER', name: 'Jane Org' });
           navigate('/organizer');

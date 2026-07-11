@@ -1,32 +1,52 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { initialCrowdData, simulateCrowdUpdates } from '../mock/crowdSimulation';
-import { generateAlerts } from '../utils/generateAlerts';
-import { generateRecommendations } from '../utils/generateRecommendations';
+import toast from 'react-hot-toast';
 
 export const AppContext = createContext();
 
 export function AppProvider({ children }) {
-  const [crowdData, setCrowdData] = useState(initialCrowdData);
-  const [alerts, setAlerts] = useState([]);
-  const [recommendations, setRecommendations] = useState([]);
+  // Global State
+  const [selectedMatch, setSelectedMatch] = useState(() => {
+    const saved = localStorage.getItem('selectedMatch');
+    return saved ? JSON.parse(saved) : null;
+  });
+  
+  const [selectedStadium, setSelectedStadium] = useState(() => {
+    const saved = localStorage.getItem('selectedStadium');
+    return saved ? JSON.parse(saved) : null;
+  });
 
-  // Simulation effect
+  const [selectedLanguage, setSelectedLanguage] = useState(() => {
+    return localStorage.getItem('selectedLanguage') || 'English';
+  });
+
+  const [currentLocationInsideStadium, setCurrentLocationInsideStadium] = useState(null);
+
+  // Sync to localStorage
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCrowdData(current => simulateCrowdUpdates(current));
-    }, 10000); // 10 seconds
+    if (selectedMatch) localStorage.setItem('selectedMatch', JSON.stringify(selectedMatch));
+    else localStorage.removeItem('selectedMatch');
+  }, [selectedMatch]);
 
-    return () => clearInterval(interval);
-  }, []);
-
-  // Update alerts and recommendations when crowdData changes
   useEffect(() => {
-    setAlerts(generateAlerts(crowdData));
-    setRecommendations(generateRecommendations(crowdData));
-  }, [crowdData]);
+    if (selectedStadium) localStorage.setItem('selectedStadium', JSON.stringify(selectedStadium));
+    else localStorage.removeItem('selectedStadium');
+  }, [selectedStadium]);
+
+  useEffect(() => {
+    localStorage.setItem('selectedLanguage', selectedLanguage);
+  }, [selectedLanguage]);
 
   return (
-    <AppContext.Provider value={{ crowdData, alerts, recommendations }}>
+    <AppContext.Provider value={{ 
+      selectedMatch, 
+      setSelectedMatch,
+      selectedStadium,
+      setSelectedStadium,
+      selectedLanguage,
+      setSelectedLanguage,
+      currentLocationInsideStadium,
+      setCurrentLocationInsideStadium
+    }}>
       {children}
     </AppContext.Provider>
   );

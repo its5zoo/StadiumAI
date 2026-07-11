@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
 
 const zoneSchema = new mongoose.Schema({
+  id: { type: String, required: true }, // custom id mapping to SVG paths
   name: { type: String, required: true },
   type: { type: String, required: true },
   capacity: { type: Number, required: true },
   occupancy: { type: Number, default: 0 },
-  status: { type: String, default: 'LOW' }
+  status: { type: String, enum: ['LOW', 'MODERATE', 'HIGH', 'CRITICAL'], default: 'LOW' }
 });
 
 zoneSchema.set('toJSON', {
@@ -17,8 +18,8 @@ zoneSchema.set('toJSON', {
 
 const stadiumSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  country: { type: String, required: true },
-  city: { type: String, required: true },
+  city: { type: String },
+  map: { type: String }, // Path to SVG asset
   zones: [zoneSchema]
 }, { timestamps: true });
 

@@ -17,18 +17,22 @@ import fanRoutes from './routes/fan.routes.js';
 import organizerRoutes from './routes/organizer.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import knowledgeRoutes from './routes/knowledge.routes.js';
+import matchRoutes from './routes/match.routes.js';
+import stadiumRoutes from './routes/stadium.routes.js';
 
 const app = express();
 
-app.use(cors());
 app.use(helmet());
+app.use(cors());
 app.use(compression());
 app.use(express.json());
 app.use(morgan('dev'));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100 
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false
 });
 app.use(limiter);
 
@@ -38,6 +42,8 @@ app.use(`${API_PREFIX}/health`, healthRoutes);
 app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/ai`, aiRoutes);
 app.use(`${API_PREFIX}/knowledge`, knowledgeRoutes);
+app.use(`${API_PREFIX}/matches`, matchRoutes);
+app.use(`${API_PREFIX}/stadiums`, stadiumRoutes);
 
 // Protected Routes with Audit Logging
 app.use(`${API_PREFIX}/fan`, authenticate, authorizeRole(ROLES.FAN, ROLES.ORGANIZER), logActivity('VIEW_FAN_DASHBOARD'), fanRoutes);

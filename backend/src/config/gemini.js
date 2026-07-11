@@ -10,7 +10,7 @@ if (process.env.GEMINI_API_KEY) {
   genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 }
 
-export const getGeminiModel = (modelName = 'gemini-1.5-flash') => {
+export const getGeminiModel = (modelName = 'gemini-3.1-flash-lite') => {
   if (!genAI) {
     throw new Error("GEMINI_API_KEY is not configured.");
   }

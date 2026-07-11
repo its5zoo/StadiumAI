@@ -15,10 +15,10 @@ export default function Home() {
 
       {/* Enter App Button */}
       <Link 
-        to="/fan" 
+        to="/matches" 
         className="bg-primary hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-transform hover:scale-105 mb-16"
       >
-        Enter Application
+        Select a Match
       </Link>
 
       {/* Features Section */}

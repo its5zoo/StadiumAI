@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Users, AlertTriangle, ShieldCheck, DoorOpen } from 'lucide-react';
 import Card from '../components/Card';
 import socketService from '../services/socket.service';
+import { AppContext } from '../context/AppContext';
 import toast from 'react-hot-toast';
 
 export default function OrganizerDashboard() {
+  const { selectedMatch, selectedStadium } = useContext(AppContext);
   const [stats, setStats] = useState({ activeVolunteers: 0, openGates: 0, criticalAlerts: 0 });
   const [crowdData, setCrowdData] = useState([]);
   const [aiAnalysis, setAiAnalysis] = useState("Waiting for real-time updates...");
@@ -113,6 +115,31 @@ export default function OrganizerDashboard() {
         </Card>
       </div>
 
+      <div className="mb-6">
+        <Card className="border border-fifagold/20 bg-gradient-to-r from-dark to-fifagold/10 py-4">
+            <div className="flex justify-around items-center">
+              <div className="text-center">
+                <p className="text-sm text-gray-400">Home</p>
+                <h3 className="text-2xl font-bold text-white">{selectedMatch?.homeTeam || 'USA'}</h3>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-fifagold font-bold mb-1">VS</p>
+                <p className="text-sm bg-fifagold/20 text-fifagold px-3 py-1 rounded-full">
+                  {selectedMatch?.kickoff ? new Date(selectedMatch.kickoff).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '20:00 EST'}
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-gray-400">Away</p>
+                <h3 className="text-2xl font-bold text-white">{selectedMatch?.awayTeam || 'BRA'}</h3>
+              </div>
+              <div className="text-right border-l border-gray-700 pl-6">
+                <p className="text-sm text-gray-400">Active Stadium</p>
+                <h3 className="text-xl font-bold text-white">{selectedStadium?.name || 'MetLife Stadium'}</h3>
+              </div>
+            </div>
+        </Card>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card title="Live Crowd Density">
           <div className="space-y-4 mt-4">
@@ -126,30 +153,17 @@ export default function OrganizerDashboard() {
                   <div className={`h-2 rounded-full ${zone.status === 'HIGH' ? 'bg-red-500' : zone.status === 'MEDIUM' ? 'bg-yellow-500' : 'bg-green-500'}`} style={{ width: `${zone.density}%` }}></div>
                 </div>
               </div>
-                ))
-              ) : (
-                <li className="text-gray-500 p-4 text-center">No active recommendations. System operating optimally.</li>
-              )}
-            </ul>
-          </Card>
-        </div>
+            )) : <p className="text-gray-500 italic">Connecting to live feed...</p>}
+          </div>
+        </Card>
 
-        {/* Sidebar Area */}
-        <div className="space-y-6">
-          <Card title="Active Alerts">
-            <div className="space-y-3">
-              {alerts.length > 0 ? (
-                alerts.map((alert, i) => (
-                  <AlertCard key={i} title={alert.title} message={alert.message} type="error" />
-                ))
-              ) : (
-                <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20 text-green-500 text-center">
-                  No active alerts.
-                </div>
-              )}
+        <Card title="AI Operations Recommendations" className="border-primary/50 border">
+          <div className="flex gap-4 items-start mt-4">
+            <div className="bg-[#0f172a] p-4 rounded-xl text-gray-300 leading-relaxed border border-gray-700 w-full">
+              {aiAnalysis}
             </div>
-          </Card>
-        </div>
+          </div>
+        </Card>
       </div>
     </div>
   );
