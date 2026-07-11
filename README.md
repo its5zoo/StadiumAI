@@ -29,14 +29,11 @@ Managing crowds of 80,000+ people across multiple languages, finding seats, hand
 # 1. Clone the repository
 git clone https://github.com/your-org/matchday-ai.git
 
-# 2. Start Backend
-cd backend
-npm install
-npm run dev
+# 2. Install Dependencies (Both Backend & Frontend)
+npm run install:all
 
-# 3. Start Frontend (In a new terminal)
-npm install
+# 3. Start Development Servers (Concurrently)
 npm run dev
 ```
 
-Check out `DEMO_FLOW.md` for the perfect hackathon pitch script!
+Check out `DEMO_SCRIPT.md` for the perfect hackathon pitch script!
