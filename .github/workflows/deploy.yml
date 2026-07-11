@@ -19,9 +19,11 @@ jobs:
         node-version: '20'
         
     - name: Install Frontend Dependencies
+      working-directory: ./frontend
       run: npm ci
       
     - name: Build Frontend
+      working-directory: ./frontend
       run: npm run build
       
     - name: Install Backend Dependencies
