@@ -1,5 +1,27 @@
-// Placeholder for future authentication logic
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'matchday_super_secret_key_2026';
+
 export const authenticate = (req, res, next) => {
-  // TODO: Verify JWT token
-  next();
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({
+      success: false,
+      message: "Access Denied. No token provided."
+    });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded; // { id, role, stadiumId, iat, exp }
+    next();
+  } catch (error) {
+    return res.status(403).json({
+      success: false,
+      message: "Invalid or expired token."
+    });
+  }
 };
