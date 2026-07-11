@@ -24,12 +24,22 @@ export const startCrowdSimulator = () => {
       const io = getIO();
       let alertTriggered = false;
 
-      // 1. Mutate crowd data randomly
+      // 1. Mutate crowd data randomly or use DEMO_MODE
+      const isDemoMode = process.env.DEMO_MODE === 'true';
+
       const updatedCrowd = currentCrowd.map(zone => {
-        // Fluctuate density by -5 to +15
-        let newDensity = zone.density + (Math.floor(Math.random() * 21) - 5);
-        if (newDensity > 100) newDensity = 100;
-        if (newDensity < 0) newDensity = 0;
+        let newDensity = zone.density;
+        
+        if (!isDemoMode) {
+          // Fluctuate density by -5 to +15
+          newDensity += (Math.floor(Math.random() * 21) - 5);
+          if (newDensity > 100) newDensity = 100;
+          if (newDensity < 0) newDensity = 0;
+        } else {
+          // Fix densities for predictable demo
+          if (zone.zone === "North Gate") newDensity = 95;
+          if (zone.zone === "Gate 5 (West)") newDensity = 90;
+        }
 
         let status = "LOW";
         if (newDensity > 50) status = "MEDIUM";
