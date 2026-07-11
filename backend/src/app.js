@@ -15,8 +15,7 @@ import healthRoutes from './routes/health.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import fanRoutes from './routes/fan.routes.js';
 import organizerRoutes from './routes/organizer.routes.js';
-import navigationRoutes from './routes/navigation.routes.js';
-import translationRoutes from './routes/translation.routes.js';
+import aiRoutes from './routes/ai.routes.js';
 
 const app = express();
 
@@ -36,12 +35,11 @@ const API_PREFIX = '/api/v1';
 
 app.use(`${API_PREFIX}/health`, healthRoutes);
 app.use(`${API_PREFIX}/auth`, authRoutes);
+app.use(`${API_PREFIX}/ai`, aiRoutes);
 
 // Protected Routes with Audit Logging
 app.use(`${API_PREFIX}/fan`, authenticate, authorizeRole(ROLES.FAN, ROLES.ORGANIZER), logActivity('VIEW_FAN_DASHBOARD'), fanRoutes);
 app.use(`${API_PREFIX}/organizer`, authenticate, authorizeRole(ROLES.ORGANIZER, ROLES.ADMIN), logActivity('VIEW_ORGANIZER_DASHBOARD'), organizerRoutes);
-app.use(`${API_PREFIX}/navigation`, authenticate, logActivity('QUERY_NAVIGATION'), navigationRoutes);
-app.use(`${API_PREFIX}/translate`, authenticate, logActivity('QUERY_TRANSLATION'), translationRoutes);
 
 app.use((req, res, next) => {
   const err = new Error("Route not found");
