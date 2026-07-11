@@ -1,45 +1,42 @@
-# MatchDay AI 🏟️
+# MatchDay AI 🏟️ ⚽
 
-**MatchDay AI** is a production-ready, real-time stadium operations platform powered by Generative AI and Retrieval Augmented Generation (RAG). Built for scale and safety, it bridges the gap between stadium organizers and thousands of fans using live intelligence.
+An intelligent, real-time stadium operations platform designed for FIFA to drastically improve the fan experience and streamline crowd management during the World Cup.
 
-## 🚀 The Problem
-Managing 80,000+ fans in a mega-event like the FIFA World Cup is a logistical nightmare. 
-- Fans struggle with static maps, causing severe gate congestion.
-- Organizers lack real-time context and communication tools.
-- Language barriers prevent crucial emergency updates from reaching all attendees.
+## 🏆 The Problem
+Managing crowds of 80,000+ people across multiple languages, finding seats, handling medical incidents, and preventing gate congestion are massive logistical challenges for FIFA organizers.
 
-## 💡 The Solution
-MatchDay AI transforms stadium operations using **Live Data + GenAI**:
-1. **Fan Portal**: Hyper-personalized AI assistant that understands exactly where the fan is and routes them intelligently using real stadium data (RAG). Seamlessly translates to their native language.
-2. **Organizer Dashboard**: Live WebSocket feeds of every zone. If a gate becomes congested, the AI analyzes the live data and RAG context to instantly recommend safe diversion routes. Organizers can send emergency broadcast toasts directly to fans.
+## 💡 Our Solution
+**MatchDay AI** acts as a dual-sided intelligence layer:
+1. **For Fans:** A mobile-first personalized experience that provides voice-driven AI navigation (in multiple languages), accessibility routing, and instant emergency alerts.
+2. **For Organizers:** A God's-eye view Command Center with live heatmaps and AI-driven decision support that tells organizers exactly *what* to do during crowd congestion.
 
-## ✨ Core Features
-- 🔐 **Role-Based Access Control (RBAC)**: Secure separation between Fans and Organizers.
-- 🧠 **RAG Knowledge Engine**: Context-grounded AI navigation, eliminating hallucinations.
-- 🚦 **Live Crowd Intelligence**: Real-time WebSocket simulator mirroring MetLife Stadium occupancy data.
-- 🛡️ **Enterprise Security**: Rate limiting, Helmet headers, Zod input validation, and a strict AI Prompt Guard protecting against injection attacks.
-- 🌐 **Global Accessibility**: Zero-latency AI-powered translations for international fans.
-- 📊 **Audit Logging**: Every AI query and system action is persistently logged in MongoDB.
+## 🚀 Key Features
+- **Global Voice Pipeline**: Speaks 5+ languages with automated intent routing.
+- **Dynamic Stadium Architecture**: AI visually overlays routes and live density on specific stadium SVG maps.
+- **Real-Time Intelligence (Sockets)**: Connects crowd sensors to AI generation, triggering instant push broadcasts.
+- **Contextual RAG**: Grounded in FIFA safety protocols to ensure AI recommendations are accurate and safe.
 
 ## 🛠️ Tech Stack
-- **Frontend**: React, Vite, Tailwind CSS, WebSockets (socket.io-client)
-- **Backend**: Node.js, Express, Socket.io, Zod, Helmet, Mongoose
-- **AI & RAG**: Google Gemini API (`gemini-1.5-flash`, `gemini-embedding-2`)
-- **Database**: MongoDB Atlas (Document & Vector Storage)
-- **DevOps**: Docker, GitHub Actions
+- **Frontend**: React, TailwindCSS, Socket.io-client
+- **Backend**: Node.js, Express, Socket.io
+- **AI / LLM**: Google Gemini Flash 1.5
+- **Vector DB**: MongoDB Atlas Vector Search
+- **Auth**: JWT Role-Based Access Control
 
-## 🎥 Demo Instructions
-For Judges testing the system, follow these steps to see the magic:
-1. Open the **Fan Dashboard** and ask: `Where is the nearest washroom from Gate 5?` (The AI uses RAG to answer instantly).
-2. Ask a question in Spanish: `¿Dónde está la puerta 4?` (The AI automatically translates).
-3. Open the **Organizer Dashboard** in another window.
-4. Watch the Live Crowd Density. Notice **Gate 5 (West)** is flashing red at 85% capacity.
-5. Watch the AI Operations Recommendations panel generate a routing solution based on live data.
-6. Click **Emergency Broadcast**, type a message, and watch it instantly appear as a Toast on the Fan's screen!
+## 🏁 Setup Instructions
 
-## 🔮 Future Scope
-- Integration with live CCTV feeds for computer vision density tracking.
-- Ticketing API integration for personalized routing right from the user's seat.
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-org/matchday-ai.git
 
----
-*Built with ❤️ for GenAI Hackathons.*
+# 2. Start Backend
+cd backend
+npm install
+npm run dev
+
+# 3. Start Frontend (In a new terminal)
+npm install
+npm run dev
+```
+
+Check out `DEMO_FLOW.md` for the perfect hackathon pitch script!

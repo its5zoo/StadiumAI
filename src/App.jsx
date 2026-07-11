@@ -23,6 +23,9 @@ import OrganizerCommandCenter from './pages/OrganizerCommandCenter';
 import OrganizerIncidents from './pages/OrganizerIncidents';
 import OrganizerBroadcast from './pages/OrganizerBroadcast';
 import OrganizerAnalytics from './pages/OrganizerAnalytics';
+import Architecture from './pages/Architecture';
+import Statistics from './pages/Statistics';
+import FutureScope from './pages/FutureScope';
 
 function AppContent() {
   const { accessibilityMode } = useContext(AppContext);
@@ -61,6 +64,13 @@ function AppContent() {
               <Route path="/organizer/broadcast" element={<OrganizerBroadcast />} />
               <Route path="/organizer/analytics" element={<OrganizerAnalytics />} />
             </Route>
+          </Route>
+
+          {/* Demo/Pitch Routes */}
+          <Route element={<DashboardLayout />}>
+            <Route path="/architecture" element={<Architecture />} />
+            <Route path="/statistics" element={<Statistics />} />
+            <Route path="/future-scope" element={<FutureScope />} />
           </Route>
         </Routes>
       </Router>

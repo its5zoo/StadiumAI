@@ -1,68 +1,26 @@
-# MatchDay AI Architecture
+# System Architecture 🏗️
 
-```mermaid
-graph TD
-    %% Frontend Layer
-    subgraph Frontend [Presentation Layer (React/Vite)]
-        F1[Fan Portal]
-        F2[Organizer Dashboard]
-        F3[Socket.io Client]
-    end
+MatchDay AI is built to be highly scalable, fault-tolerant, and responsive.
 
-    %% API Gateway & Security Layer
-    subgraph Gateway [API & Security Layer (Express)]
-        G1[Helmet & Rate Limiter]
-        G2[Zod Validator]
-        G3[Auth Middleware JWT]
-    end
+## Core Flow
 
-    %% Core Services Layer
-    subgraph Services [Core Business Services]
-        S1[Socket.io Server]
-        S2[Live Simulator Engine]
-        S3[RAG Retriever Service]
-    end
+1. **Client Layer (React)**
+   - The user interacts via Voice (Web Speech API) or Text.
+   - Sockets remain connected in the background to receive instantaneous broadcast alerts without refreshing.
 
-    %% AI Intelligence Layer
-    subgraph AI [Generative AI Layer]
-        A1[Prompt Guard Security]
-        A2[Navigation Assistant AI]
-        A3[Crowd Insights AI]
-        A4[Translation AI]
-    end
+2. **WebSocket Layer (Socket.io)**
+   - Authenticated JWT connections segregate `Fans` and `Organizers` into isolated rooms.
+   - A background Simulator Service (or real IoT sensors in production) emits `crowd-update` events every few seconds.
 
-    %% External & Persistence Layer
-    subgraph External [External APIs & DB]
-        E1[(MongoDB Atlas)]
-        E2[Google Gemini API]
-    end
+3. **Backend API (Node/Express)**
+   - Manages standard REST operations (Auth, Profile, Stadium metadata).
+   - Handles the `/voice/query` endpoint which detects language, routes intent, and processes RAG.
 
-    %% Relationships
-    F1 -->|HTTP Requests| G1
-    F2 -->|HTTP Requests| G1
-    F3 <-->|WebSockets| S1
-    
-    G1 --> G2
-    G2 --> G3
-    G3 --> Services
-    
-    S2 -->|Real-Time Updates| S1
-    S3 -->|Fetch Knowledge Base| E1
-    
-    Services --> A1
-    A1 --> A2
-    A1 --> A3
-    A1 --> A4
-    
-    A2 <--> E2
-    A3 <--> E2
-    A4 <--> E2
-```
+4. **AI & RAG Engine (Gemini + MongoDB)**
+   - **Vector Search**: The query is vectorized and compared against chunks of FIFA safety PDFs stored in MongoDB.
+   - **Gemini Flash 1.5**: The retrieved chunks are passed as context to Gemini, generating highly specific, stadium-aware answers.
 
-## Core Technologies
-- **Frontend**: React, Vite, TailwindCSS (FIFA Themed), Lucide Icons
-- **Backend**: Node.js, Express, Socket.io
-- **Security**: Helmet, Express-Rate-Limit, Zod, JWT
-- **AI/ML**: `@google/generative-ai` (Gemini-1.5-flash, gemini-embedding-2), Custom Prompt Guard
-- **Database**: MongoDB Atlas (Storage + Vector Embeddings)
-- **DevOps**: Docker, GitHub Actions CI/CD
+5. **Decision Support Loop**
+   - When a zone hits >80% congestion via the socket engine, the backend automatically triggers the AI to evaluate the state.
+   - The AI generates a recommendation (e.g., "Deploy volunteers to Gate 5").
+   - This recommendation is emitted via sockets directly to the Organizer Command Center.

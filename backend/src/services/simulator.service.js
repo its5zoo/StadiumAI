@@ -6,12 +6,12 @@ let simulatorInterval = null;
 
 // Mock active dynamic crowd density states for MetLife Stadium Demo
 const currentCrowd = [
-  { zone: "Gate 1 (North)", density: 45, status: "LOW" },
+  { zone: "North Gate", density: 90, status: "HIGH" },
   { zone: "Gate 2 (East)", density: 30, status: "LOW" },
   { zone: "Gate 4 (South)", density: 60, status: "MEDIUM" },
-  { zone: "Gate 5 (West)", density: 85, status: "HIGH" }, // Simulated congestion
-  { zone: "Food Court A", density: 70, status: "MEDIUM" },
-  { zone: "Medical Tent 1", density: 25, status: "LOW" }
+  { zone: "Gate 5 (West)", density: 85, status: "HIGH" },
+  { zone: "Food Court", density: 70, status: "MEDIUM" },
+  { zone: "Parking A", density: 40, status: "LOW" }
 ];
 
 export const startCrowdSimulator = () => {
