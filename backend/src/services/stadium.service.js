@@ -1,4 +1,4 @@
-import { stadiumMock } from '../mock/stadium.mock.js';
+import { stadiumsMock } from '../mock/stadium.mock.js';
 import stadiumRepository from '../repositories/stadium.repository.js';
 
 class StadiumService {
@@ -9,7 +9,7 @@ class StadiumService {
     } catch (err) {
       console.warn("DB unavailable, falling back to mock stadium");
     }
-    return stadiumMock;
+    return stadiumsMock[0];
   }
 
   async getZones() {
@@ -19,8 +19,9 @@ class StadiumService {
     } catch (err) {
       console.warn("DB unavailable, falling back to mock zones");
     }
-    return stadiumMock.zones;
+    return stadiumsMock[0].zones;
   }
+}
 }
 
 export default new StadiumService();
