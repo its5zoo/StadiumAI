@@ -2,11 +2,11 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Card from '../components/Card';
+import toast from 'react-hot-toast';
 
 export default function Login() {
   const [email, setEmail] = useState('fan@example.com');
   const [password, setPassword] = useState('password');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
   const { login } = useContext(AuthContext);
@@ -15,10 +15,8 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
 
     try {
-      // Mock logic calling the local backend if running, otherwise mock locally
       const response = await fetch('http://localhost:5000/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -32,17 +30,16 @@ export default function Login() {
       }
 
       login(data.data.token, data.data.user);
+      toast.success("Successfully logged in!");
       
-      // Redirect based on role
       if (data.data.user.role === 'ORGANIZER') {
         navigate('/organizer');
       } else {
         navigate('/fan');
       }
     } catch (err) {
-      setError(err.message);
-      // Fallback local mock if backend is not running during testing
       if (err.message.includes('Failed to fetch')) {
+        toast.error("Backend is offline. Using local mock session.");
         if (email === 'fan@example.com') {
           login('mock-jwt-fan', { id: '1', role: 'FAN', name: 'John Fan' });
           navigate('/fan');
@@ -50,8 +47,10 @@ export default function Login() {
           login('mock-jwt-org', { id: '2', role: 'ORGANIZER', name: 'Jane Org' });
           navigate('/organizer');
         } else {
-          setError('Backend is offline and no local mock matched this email.');
+          toast.error('No local mock matched this email.');
         }
+      } else {
+        toast.error(err.message);
       }
     } finally {
       setLoading(false);
@@ -65,11 +64,6 @@ export default function Login() {
       <div className="w-full max-w-md">
         <Card title="Login to your account">
           <form onSubmit={handleLogin} className="space-y-4">
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded text-sm">
-                {error}
-              </div>
-            )}
             
             <div className="space-y-1">
               <label className="text-sm text-gray-400">Email</label>
