@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { Map, Settings, X, LayoutDashboard, BotMessageSquare } from 'lucide-react';
+import { Map, Settings, X, LayoutDashboard, BotMessageSquare, Cpu, TrendingUp, Rocket } from 'lucide-react';
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
   const { user } = useContext(AuthContext);
@@ -20,6 +20,12 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
     { to: "/organizer/incidents", icon: <BotMessageSquare size={20} />, label: "Incidents" },
     { to: "/organizer/broadcast", icon: <BotMessageSquare size={20} />, label: "Broadcast" },
     { to: "/organizer/analytics", icon: <LayoutDashboard size={20} />, label: "Analytics" },
+  ];
+
+  const demoLinks = [
+    { to: "/architecture", icon: <Cpu size={20} />, label: "Architecture" },
+    { to: "/statistics", icon: <TrendingUp size={20} />, label: "Statistics" },
+    { to: "/future-scope", icon: <Rocket size={20} />, label: "Future Scope" },
   ];
 
   const links = user?.role === 'ORGANIZER' ? organizerLinks : fanLinks;
