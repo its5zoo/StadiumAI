@@ -1,55 +1,72 @@
-import React, { useContext } from 'react';
+import React, { useEffect, useState } from 'react';
+import { ShieldAlert, Compass, Users } from 'lucide-react';
 import Card from '../components/Card';
-import AlertCard from '../components/AlertCard';
-import StatusBadge from '../components/StatusBadge';
-import { AppContext } from '../context/AppContext';
-import { getDensityStatus } from '../mock/crowdSimulation';
+import ChatBox from '../components/ChatBox';
+import socketService from '../services/socket.service';
+import toast from 'react-hot-toast';
 
 export default function FanDashboard() {
-  const { alerts, crowdData } = useContext(AppContext);
+  const [crowdData, setCrowdData] = useState([
+    { zone: "Gate A", density: 40, status: "LOW" },
+    { zone: "Gate B", density: 30, status: "LOW" },
+    { zone: "Gate 6", density: 60, status: "MEDIUM" },
+    { zone: "Main Concourse", density: 50, status: "MEDIUM" }
+  ]);
+
+  useEffect(() => {
+    const socket = socketService.connect();
+    if (socket) {
+      socket.on('emergency-broadcast', (data) => {
+        toast((t) => (
+          <div className="flex flex-col gap-2">
+            <span className="font-bold text-red-500">🚨 EMERGENCY BROADCAST</span>
+            <span>{data.message}</span>
+            <button 
+              onClick={() => toast.dismiss(t.id)} 
+              className="mt-2 bg-red-500 text-white px-3 py-1 rounded text-sm w-full"
+            >
+              Acknowledge
+            </button>
+          </div>
+        ), { duration: 30000, style: { border: '2px solid red', backgroundColor: '#1e293b', color: '#fff' } });
+      });
+    }
+
+    return () => {
+      if (socket) {
+        socket.off('emergency-broadcast');
+      }
+    };
+  }, []);
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Fan Dashboard</h1>
-      
-      {/* Alerts Section */}
-      {alerts.length > 0 && (
-        <div className="space-y-2">
-          {alerts.map((alert, i) => (
-            <AlertCard key={i} title={alert.title} message={alert.message} type="warning" />
-          ))}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-white">Fan Hub <span className="text-sm font-normal text-green-500 ml-2 animate-pulse">● LIVE</span></h1>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <ChatBox />
         </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card title="AI Navigation">
-          <div className="space-y-4">
-            <p className="text-gray-400 text-sm">Find your way around the stadium easily.</p>
-            <button className="w-full bg-primary hover:bg-blue-700 text-white py-2 rounded-lg transition-colors">
-              Start Navigation
-            </button>
-          </div>
-        </Card>
-
-        <Card title="Crowd Status">
-          <div className="space-y-4">
-            {crowdData.slice(0, 3).map((item, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <span>{item.zone}</span>
-                <StatusBadge status={getDensityStatus(item.density)} text={`${item.density}%`} />
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card title="Translator">
-          <div className="space-y-4">
-            <p className="text-gray-400 text-sm">Need help communicating?</p>
-            <button className="w-full bg-[#334155] hover:bg-[#475569] text-white py-2 rounded-lg transition-colors border border-gray-600">
-              Open Translator
-            </button>
-          </div>
-        </Card>
+        
+        <div className="space-y-6">
+          <Card title="Live Stadium Status">
+            <div className="space-y-4 mt-4">
+              {crowdData.map((zone, i) => (
+                <div key={i}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-gray-300">{zone.zone}</span>
+                    <span className={zone.status === 'HIGH' ? 'text-red-500 font-bold' : zone.status === 'MEDIUM' ? 'text-yellow-500' : 'text-green-500'}>{zone.status}</span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div className={`h-2 rounded-full ${zone.status === 'HIGH' ? 'bg-red-500' : zone.status === 'MEDIUM' ? 'bg-yellow-500' : 'bg-green-500'}`} style={{ width: `${zone.density}%` }}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );
