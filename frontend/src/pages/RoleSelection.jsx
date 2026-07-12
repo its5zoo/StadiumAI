@@ -9,10 +9,10 @@ export default function RoleSelection() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!selectedMatch || !selectedStadium) {
+    if (!selectedMatch && !localStorage.getItem('selectedMatch')) {
       navigate('/matches');
     }
-  }, [selectedMatch, selectedStadium, navigate]);
+  }, [selectedMatch, navigate]);
 
   return (
     <div className="min-h-screen bg-dark flex flex-col items-center justify-center p-4">
