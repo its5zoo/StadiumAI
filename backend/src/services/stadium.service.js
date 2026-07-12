@@ -22,6 +22,6 @@ class StadiumService {
     return stadiumsMock[0].zones;
   }
 }
-}
+
 
 export default new StadiumService();
